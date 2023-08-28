@@ -1,13 +1,16 @@
 <?php
 
+require 'vendor/autoload.php';
 
+use Firebase\JWT\JWT;
+use Firebase\JWT\Key;
 
 function loginUser($connection, $data) {
     
     $username = $data->username;
 
-    $stmt = mysqli_prepare($connection, "SELECT * FROM `users` WHERE `username` AND `password` = ?, ?");
-    mysqli_stmt_bind_param($stmt, "ss", $username, $password);
+    $stmt = mysqli_prepare($connection, "SELECT * FROM `users` WHERE `username` = ?");
+    mysqli_stmt_bind_param($stmt, "s", $username);
     mysqli_stmt_execute($stmt);
     
     $result = mysqli_stmt_get_result($stmt);
@@ -18,9 +21,11 @@ function loginUser($connection, $data) {
     if($user !== null){
         
        $userId = $user['id'];
-       $token = bin2hex(random_bytes(16));
- 
-       $loginToken = mysqli_query($connection, "INSERT INTO `token` (`token`,`user_id`) VALUES ('$token','$userId')");
+     $token = bin2hex(random_bytes(16));
+        $workTime = time() + 3600;
+
+       $loginToken = mysqli_query($connection, "INSERT INTO `token` (`token`,`user_id`, `time`) VALUES ('$token','$userId', '$workTime')");
+        
        if(!$loginToken){
       http_response_code(404);
         $res = [
@@ -32,7 +37,9 @@ function loginUser($connection, $data) {
     http_response_code(200);
         $res = [
             "status" => "200 OK",
-"message" => "user login successfully"
+"message" => "user login successfully",
+"token" => $token,
+"time" => $workTime,
         ];
         echo json_encode($res);
        }
@@ -48,9 +55,10 @@ function loginUser($connection, $data) {
 }
 
 function logout($connection){
-   
+
 
     $tokenAuth = substr(getallheaders()['Authorization'], 7);
+    
    if($tokenAuth){
   mysqli_query($connection, "DELETE  FROM `token` WHERE `token` = '$tokenAuth'");
       http_response_code(200);

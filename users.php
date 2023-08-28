@@ -2,12 +2,12 @@
 require_once "./helpers/validatePassword.php";
 
      function  getUsers($connection){
-
-$token = substr(getallheaders()['Authorization'], 7);
-
-    $userFromToken = mysqli_query($connection, "SELECT `user_id` FROM `token` WHERE `token` = '$token'  ")->fetch_assoc();
-    $userFromToken['user_id'];
-     if(!is_null($userFromToken)){
+   
+ $token = substr(getallheaders()['Authorization'], 7);
+ 
+    $userFromToken = mysqli_query($connection, "SELECT * FROM `token` WHERE `token` = '$token'  ")->fetch_assoc();
+  $accessTime =  $userFromToken['time'] - time();
+     if(!is_null($userFromToken) && $accessTime > 0){
  $users =   mysqli_query($connection, "SELECT * FROM `users`");
      $userList = array();
      while($user = mysqli_fetch_assoc($users)){

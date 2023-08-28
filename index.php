@@ -7,7 +7,7 @@ $q = $_GET["q"];
 
 $path = explode("/", $q);
 
- json_encode($path[0]);
+     json_encode($path[0]);
 
 $method =  $_SERVER["REQUEST_METHOD"];
 
